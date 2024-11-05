@@ -75,6 +75,13 @@ impl MemorySet {
     /// Add a new MapArea into this MemorySet.
     /// Assuming that there are no conflicts in the virtual address
     /// space.
+    pub fn drop_frame_area(&mut self, start_va: VirtAddr, end_va: VirtAddr) {
+        let start_vpn: VirtPageNum = start_va.floor();
+        let end_vpn: VirtPageNum = end_va.ceil();
+        for vpn in VPNRange::new(start_vpn, end_vpn) {
+            self.page_table.unmap(vpn);
+        }
+    }
     fn push(&mut self, mut map_area: MapArea, data: Option<&[u8]>) {
         map_area.map(&mut self.page_table);
         if let Some(data) = data {

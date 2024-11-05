@@ -1,7 +1,7 @@
 //! Types related to task management & Functions for completely changing TCB
-use super::TaskContext;
 use super::{kstack_alloc, pid_alloc, KernelStack, PidHandle};
-use crate::config::TRAP_CONTEXT_BASE;
+use super::{TaskContext, BIG_STRIDE};
+use crate::config::{MAX_SYSCALL_NUM, TRAP_CONTEXT_BASE};
 use crate::mm::{MemorySet, PhysPageNum, VirtAddr, KERNEL_SPACE};
 use crate::sync::UPSafeCell;
 use crate::trap::{trap_handler, TrapContext};
@@ -21,7 +21,7 @@ pub struct TaskControlBlock {
     pub kernel_stack: KernelStack,
 
     /// Mutable
-    inner: UPSafeCell<TaskControlBlockInner>,
+    pub(crate) inner: UPSafeCell<TaskControlBlockInner>,
 }
 
 impl TaskControlBlock {
@@ -68,6 +68,16 @@ pub struct TaskControlBlockInner {
 
     /// Program break
     pub program_brk: usize,
+    /// The number of syscalls called by the task
+    pub task_syscall_times: [u32; MAX_SYSCALL_NUM],
+    /// The total running time of the task
+    pub task_time: usize,
+    /// Stride stride
+    pub stride: isize,
+    /// Pass of Stride
+    pub pass: isize,
+    /// Priority of Stride
+    pub priority: isize,
 }
 
 impl TaskControlBlockInner {
@@ -118,6 +128,11 @@ impl TaskControlBlock {
                     exit_code: 0,
                     heap_bottom: user_sp,
                     program_brk: user_sp,
+                    task_syscall_times: [0; MAX_SYSCALL_NUM],
+                    task_time: 0,
+                    stride: 0,
+                    pass: BIG_STRIDE / 16,
+                    priority: 16,
                 })
             },
         };
@@ -191,6 +206,11 @@ impl TaskControlBlock {
                     exit_code: 0,
                     heap_bottom: parent_inner.heap_bottom,
                     program_brk: parent_inner.program_brk,
+                    task_syscall_times: [0; MAX_SYSCALL_NUM],
+                    task_time: 0,
+                    stride: 0,
+                    pass: BIG_STRIDE / 16,
+                    priority: 16,
                 })
             },
         });
