@@ -1,7 +1,7 @@
 //! Types related to task management & Functions for completely changing TCB
-use super::TaskContext;
 use super::{kstack_alloc, pid_alloc, KernelStack, PidHandle};
-use crate::config::TRAP_CONTEXT_BASE;
+use super::{TaskContext, BIG_STRIDE};
+use crate::config::{MAX_SYSCALL_NUM, TRAP_CONTEXT_BASE};
 use crate::fs::{File, Stdin, Stdout};
 use crate::mm::{MemorySet, PhysPageNum, VirtAddr, KERNEL_SPACE};
 use crate::sync::UPSafeCell;
@@ -23,7 +23,7 @@ pub struct TaskControlBlock {
     pub kernel_stack: KernelStack,
 
     /// Mutable
-    inner: UPSafeCell<TaskControlBlockInner>,
+    pub(crate) inner: UPSafeCell<TaskControlBlockInner>,
 }
 
 impl TaskControlBlock {
@@ -38,6 +38,7 @@ impl TaskControlBlock {
     }
 }
 
+/// Task control block structure
 pub struct TaskControlBlockInner {
     /// The physical page number of the frame where the trap context is placed
     pub trap_cx_ppn: PhysPageNum,
@@ -64,6 +65,7 @@ pub struct TaskControlBlockInner {
 
     /// It is set when active exit or execution error occurs
     pub exit_code: i32,
+    /// File descriptor table
     pub fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
 
     /// Heap bottom
@@ -71,21 +73,35 @@ pub struct TaskControlBlockInner {
 
     /// Program break
     pub program_brk: usize,
+    /// The number of syscalls called by the task
+    pub task_syscall_times: [u32; MAX_SYSCALL_NUM],
+    /// The total running time of the task
+    pub task_time: usize,
+    /// Stride stride
+    pub stride: isize,
+    /// Pass of Stride
+    pub pass: isize,
+    /// Priority of Stride
+    pub priority: isize,
 }
 
 impl TaskControlBlockInner {
+    /// trap cs
     pub fn get_trap_cx(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.get_mut()
     }
+    /// user token
     pub fn get_user_token(&self) -> usize {
         self.memory_set.token()
     }
     fn get_status(&self) -> TaskStatus {
         self.task_status
     }
+    /// is zombie
     pub fn is_zombie(&self) -> bool {
         self.get_status() == TaskStatus::Zombie
     }
+    /// alloc fd
     pub fn alloc_fd(&mut self) -> usize {
         if let Some(fd) = (0..self.fd_table.len()).find(|fd| self.fd_table[*fd].is_none()) {
             fd
@@ -135,6 +151,11 @@ impl TaskControlBlock {
                     ],
                     heap_bottom: user_sp,
                     program_brk: user_sp,
+                    task_syscall_times: [0; MAX_SYSCALL_NUM],
+                    task_time: 0,
+                    stride: 0,
+                    pass: BIG_STRIDE / 16,
+                    priority: 16,
                 })
             },
         };
@@ -216,6 +237,11 @@ impl TaskControlBlock {
                     fd_table: new_fd_table,
                     heap_bottom: parent_inner.heap_bottom,
                     program_brk: parent_inner.program_brk,
+                    task_syscall_times: [0; MAX_SYSCALL_NUM],
+                    task_time: 0,
+                    stride: 0,
+                    pass: BIG_STRIDE / 16,
+                    priority: 16,
                 })
             },
         });

@@ -28,14 +28,17 @@ pub use context::TaskContext;
 use lazy_static::*;
 pub use manager::{fetch_task, TaskManager};
 use switch::__switch;
-pub use task::{TaskControlBlock, TaskStatus};
+pub use task::{TaskControlBlock, TaskControlBlockInner, TaskStatus};
 
 pub use id::{kstack_alloc, pid_alloc, KernelStack, PidHandle};
 pub use manager::add_task;
 pub use processor::{
-    current_task, current_trap_cx, current_user_token, run_tasks, schedule, take_current_task,
-    Processor,
+    current_task, current_trap_cx, current_user_token, drop_frame_area, get_current_task_time,
+    get_syscall_times, insert_framed_area, run_tasks, schedule, take_current_task,
+    update_syscall_times, Processor,
 };
+/// Suspend the current 'Running' task and run the next task in task list.
+pub const BIG_STRIDE: isize = 7355608;
 /// Suspend the current 'Running' task and run the next task in task list.
 pub fn suspend_current_and_run_next() {
     // There must be an application running.
