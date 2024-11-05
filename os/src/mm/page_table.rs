@@ -171,3 +171,11 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&
     }
     v
 }
+pub fn translate_va_to_pa(token: usize, ptr: usize) -> usize {
+    let page_table = PageTable::from_token(token);
+    let va = VirtAddr::from(ptr);
+    let vpn = va.floor();
+    let ppn = page_table.translate(vpn).unwrap().ppn();
+    let pa = usize::from(ppn) << 12 | va.page_offset();
+    pa.into()
+}
