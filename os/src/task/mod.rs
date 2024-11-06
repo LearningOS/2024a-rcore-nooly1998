@@ -37,6 +37,7 @@ pub use processor::{
     update_syscall_times, Processor,
 };
 
+/// const num BIG STRIDE
 pub const BIG_STRIDE: isize = 7355608;
 
 /// Suspend the current 'Running' task and run the next task in task list.

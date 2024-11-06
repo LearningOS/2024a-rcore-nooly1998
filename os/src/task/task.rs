@@ -35,7 +35,7 @@ impl TaskControlBlock {
         inner.memory_set.token()
     }
 }
-
+/// task ctl block inner
 pub struct TaskControlBlockInner {
     /// The physical page number of the frame where the trap context is placed
     pub trap_cx_ppn: PhysPageNum,
@@ -89,9 +89,11 @@ impl TaskControlBlockInner {
     pub fn get_user_token(&self) -> usize {
         self.memory_set.token()
     }
+    /// get the status
     fn get_status(&self) -> TaskStatus {
         self.task_status
     }
+    /// is zombie
     pub fn is_zombie(&self) -> bool {
         self.get_status() == TaskStatus::Zombie
     }
