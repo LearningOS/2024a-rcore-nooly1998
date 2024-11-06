@@ -19,7 +19,6 @@ use crate::loader::{get_num_app, init_app_cx};
 use crate::sync::UPSafeCell;
 use crate::timer::get_time_ms;
 use lazy_static::*;
-use riscv::paging::Rv48PageTableGuest;
 use switch::__switch;
 pub use task::{TaskControlBlock, TaskStatus};
 
@@ -59,7 +58,7 @@ lazy_static! {
             task_start_time:get_time_ms(),
             task_lastest_syscall_time:get_time_ms(),
             task_syscall_trace:[0,MAX_SYSCALL_NUM]
-        }; MAX_APP_NUM];
+        }; MAX_APP_NUM as u32];
 
         print!("{}",get_time_ms());
         for (i, task) in tasks.iter_mut().enumerate() {

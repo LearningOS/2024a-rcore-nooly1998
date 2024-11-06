@@ -61,7 +61,7 @@ pub fn sys_task_info(_ti: *mut TaskInfo) -> isize {
 
     let task_info = TaskInfo {
         status: (unsafe { *task_control_block }).task_status,
-        syscall_times: (unsafe { *task_control_block }).task_syscall_time,
+        syscall_times: (unsafe { *task_control_block }).task_syscall_trace,
         time: {
             let start = (unsafe { *task_control_block }).task_start_time;
             let end = (unsafe { *task_control_block }).task_lastest_syscall_time;
