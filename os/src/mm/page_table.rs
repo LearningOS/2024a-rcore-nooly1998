@@ -4,7 +4,7 @@ use super::{frame_alloc, FrameTracker, PhysPageNum, StepByOne, VirtAddr, VirtPag
 use alloc::vec;
 use alloc::vec::Vec;
 use bitflags::*;
-
+/// bitflags
 bitflags! {
     /// page table entry flags
     pub struct PTEFlags: u8 {
@@ -171,6 +171,8 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&
     }
     v
 }
+
+/// translate va to pa
 pub fn translate_va_to_pa(token: usize, ptr: usize) -> usize {
     let page_table = PageTable::from_token(token);
     let va = VirtAddr::from(ptr);
