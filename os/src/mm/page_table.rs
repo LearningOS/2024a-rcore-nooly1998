@@ -4,7 +4,6 @@ use super::{frame_alloc, FrameTracker, PhysPageNum, StepByOne, VirtAddr, VirtPag
 use alloc::vec;
 use alloc::vec::Vec;
 use bitflags::*;
-/// bitflags
 bitflags! {
     /// page table entry flags
     pub struct PTEFlags: u8 {
