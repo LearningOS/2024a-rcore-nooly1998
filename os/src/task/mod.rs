@@ -58,7 +58,7 @@ lazy_static! {
             task_start_time:get_time_ms(),
             task_lastest_syscall_time:get_time_ms(),
             task_syscall_trace:[0,MAX_SYSCALL_NUM]
-        }; MAX_APP_NUM as u32];
+        }; MAX_APP_NUM];
 
         print!("{}",get_time_ms());
         for (i, task) in tasks.iter_mut().enumerate() {
