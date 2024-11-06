@@ -142,19 +142,18 @@ impl TaskManager {
             panic!("All applications completed!");
         }
     }
-}
-
-fn get_current_task_control_block(&self) -> *mut TaskControlBlock {
-    let mut inner = TASK_MANAGER.inner.exclusive_access();
-    // current task id
-    let current = inner.current_task;
-    &mut inner.tasks[current]
-}
-fn update_task_info(&self, syscall_id: usize) {
-    let mut inner = TASK_MANAGER.inner.exclusive_access();
-    let current = inner.current_task;
-    inner.tasks[current].task_lastest_syscall_time = get_time_ms();
-    inner.tasks[current].task_syscall_trace[syscall_id] += 1;
+    fn get_current_task_control_block(&self) -> *mut TaskControlBlock {
+        let mut inner = TASK_MANAGER.inner.exclusive_access();
+        // current task id
+        let current = inner.current_task;
+        &mut inner.tasks[current]
+    }
+    fn update_task_info(&self, syscall_id: usize) {
+        let mut inner = TASK_MANAGER.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].task_lastest_syscall_time = get_time_ms();
+        inner.tasks[current].task_syscall_trace[syscall_id] += 1;
+    }
 }
 
 /// Run the first task in task list.
